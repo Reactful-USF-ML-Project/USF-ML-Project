@@ -1,4 +1,5 @@
 import csv
+import numpy
 
 def update_dict(dictionary, object_type, object_id):
     if object_type not in dictionary:
@@ -6,6 +7,9 @@ def update_dict(dictionary, object_type, object_id):
         dictionary[object_type].append(object_id)
     elif object_id not in dictionary[object_type]:
         dictionary[object_type].append(object_id)
+
+# [ start time, end time, average time on page, country, 
+#   region, type, device, page count, reaction combination, goal combination]
 
 with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.csv.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
@@ -39,20 +43,21 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
                 object_id = row[4]
                 update_dict(possible_values, object_type, object_id)
 
+                if object_type == "page":
+                    matrix[matrix_index][7] += 1
+
             else:
-                page_count = 0
                 matrix_index += 1
                 session_ids.append(sid)
-                matrix.append([])
+
+                a = numpy.empty(10, dtype=object)
+                matrix.append(a)
                 # check if time is smaller than min or greater than max
                 time = row[0]
                 start_time = time
                 end_time = time
-                matrix[matrix_index].append(start_time)
-                matrix[matrix_index].append(end_time)
-
-                # add session ID to array
-                matrix[matrix_index].append(sid)
+                matrix[matrix_index][0] = start_time
+                matrix[matrix_index][1] = end_time
 
                 # use object key val pair to
                 object_type = row[3]
@@ -62,15 +67,19 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
                     # find region in dictionary, find index of US-CA in array
                     # index = value adding into array
 
+                if object_type == "page":
+                    matrix[matrix_index][7] = 1
+                else:
+                    matrix[matrix_index][7] = 0
+ 
         line_count += 1
     print("Processed " + str(line_count) + " lines.")
     x = 0
-    # for i in matrix:
-    #     print "Item " + str(x) + ": " + matrix[x][0] + ", " + matrix[x][1] + ", " + matrix[x][2] 
-    #     x += 1
-    for e in possible_values:
-        print e
-        for x in object_dict[e]:
-            print "\t" + x
+    # for e in possible_values:
+    #     print e
+    #     for x in possible_values[e]:
+    #         print "\t" + x
     # print(matrix)
+    for a in matrix:
+        print a
     # print(labels)
