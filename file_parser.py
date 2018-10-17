@@ -15,7 +15,8 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
     matrix_index = -1
     start_time = -1
     end_time = -1
-    object_dict = {}
+    possible_values = {}
+    key_dict = {'country': 3, 'region': 4, 'type': 5, 'device': 6, 'page': 7, 'reaction': 8}
     for row in csv_reader:
         if line_count == 0:
             # Create labels array
@@ -36,9 +37,10 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
 
                 object_type = row[3]
                 object_id = row[4]
-                update_dict(object_dict, object_type, object_id)
+                update_dict(possible_values, object_type, object_id)
 
             else:
+                page_count = 0
                 matrix_index += 1
                 session_ids.append(sid)
                 matrix.append([])
@@ -55,7 +57,7 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
                 # use object key val pair to
                 object_type = row[3]
                 object_id = row[4]
-                update_dict(object_dict, object_type, object_id)
+                update_dict(possible_values, object_type, object_id)
                     # if object type is region and value is US-CA
                     # find region in dictionary, find index of US-CA in array
                     # index = value adding into array
@@ -66,7 +68,7 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
     # for i in matrix:
     #     print "Item " + str(x) + ": " + matrix[x][0] + ", " + matrix[x][1] + ", " + matrix[x][2] 
     #     x += 1
-    for e in object_dict:
+    for e in possible_values:
         print e
         for x in object_dict[e]:
             print "\t" + x
