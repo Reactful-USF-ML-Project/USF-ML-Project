@@ -20,16 +20,15 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
     start_time = -1
     end_time = -1
     possible_values = {}
-    key_dict = {'country': 3, 'region': 4, 'type': 5, 'device': 6, 'page': 7, 'reaction': 8}
+    key_dict = {'country': 3, 'region': 4, 'type': 5, 'device': 6, 'reaction': 8, 'goal': 9}
     for row in csv_reader:
         if line_count == 0:
-            # Create labels array
             labels = [] 
             for l in row: 
                 labels.append(l)
         else:
-            # Fill in the matrix
             sid = row[2]
+
             if sid in session_ids:
                 time = row[0]
                 if time < start_time:
@@ -45,6 +44,10 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
 
                 if object_type == "page":
                     matrix[matrix_index][7] += 1
+                elif object_type in key_dict:
+                    array_index = key_dict[object_type]
+                    value = possible_values[object_type].index(object_id)
+                    matrix[matrix_index][array_index] = value
 
             else:
                 matrix_index += 1
@@ -63,14 +66,15 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
                 object_type = row[3]
                 object_id = row[4]
                 update_dict(possible_values, object_type, object_id)
-                    # if object type is region and value is US-CA
-                    # find region in dictionary, find index of US-CA in array
-                    # index = value adding into array
 
                 if object_type == "page":
                     matrix[matrix_index][7] = 1
                 else:
                     matrix[matrix_index][7] = 0
+                    if object_type in key_dict:
+                        array_index = key_dict[object_type]
+                        value = possible_values[object_type].index(object_id)
+                        matrix[matrix_index][array_index] = value
  
         line_count += 1
     print("Processed " + str(line_count) + " lines.")
@@ -81,5 +85,6 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
     #         print "\t" + x
     # print(matrix)
     for a in matrix:
-        print a
+            result = ", ".join(map(str, a))
+            print result
     # print(labels)
