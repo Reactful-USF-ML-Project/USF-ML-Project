@@ -1,31 +1,20 @@
 import csv
 
-<<<<<<< HEAD
 with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.csv.csv') as csv_file:
-=======
-with open('../Downloads/results-20181008-130002 - results-20181008-130002.csv.csv') as csv_file:
->>>>>>> d86c32789ec3e9d7a45c8a8a0f7bcf616bcd0cfa
     csv_reader = csv.reader(csv_file, delimiter=',')
     line_count = 0
     session_ids = []
     matrix = []
-<<<<<<< HEAD
     matrix_index = 0
     start_time = -1
     end_time = -1
     for row in csv_reader:
         if line_count == 0:
             # Create labels array
-=======
-    # matrix_index = 0 
-    for row in csv_reader:
-        if line_count == 0:
->>>>>>> d86c32789ec3e9d7a45c8a8a0f7bcf616bcd0cfa
             labels = [] 
             for l in row: 
                 labels.append(l)
         else:
-<<<<<<< HEAD
             # Fill in the matrix
             sid = row[2]
             if sid in session_ids:
@@ -80,16 +69,3 @@ with open('../Downloads/results-20181008-130002 - results-20181008-130002.csv.cs
         print "Item " + str(x) + ": " + matrix[x][0] + ", " + matrix[x][1] + ", " + matrix[x][2]
     # print(matrix)
     # print(labels)
-=======
-            sid = row[2]
-            if sid in session_ids:
-                continue
-            else:
-                matrix.append([])
-                # session_ids.append(sid)
-                # matrix_index += 1
-        line_count += 1
-    print("Processed " + str(line_count) + " lines.")
-    # print(session_ids)
-    print(matrix)
->>>>>>> d86c32789ec3e9d7a45c8a8a0f7bcf616bcd0cfa
