@@ -1,5 +1,12 @@
 import csv
 
+def update_dict(dictionary, object_type, object_id):
+    if object_type not in dictionary:
+        dictionary.update({object_type:[]})
+        dictionary[object_type].append(object_id)
+    elif object_id not in dictionary[object_type]:
+        dictionary[object_type].append(object_id)
+
 with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.csv.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     line_count = 0
@@ -8,6 +15,7 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
     matrix_index = -1
     start_time = -1
     end_time = -1
+    object_dict = {}
     for row in csv_reader:
         if line_count == 0:
             # Create labels array
@@ -25,10 +33,11 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
                 elif time > end_time:
                     end_time = time
                     matrix[matrix_index][1] = end_time
-                    
 
+                object_type = row[3]
+                object_id = row[4]
+                update_dict(object_dict, object_type, object_id)
 
-                # update start and end time if necessary 
             else:
                 matrix_index += 1
                 session_ids.append(sid)
@@ -42,21 +51,24 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
 
                 # add session ID to array
                 matrix[matrix_index].append(sid)
-                
+
                 # use object key val pair to
                 object_type = row[3]
                 object_id = row[4]
+                update_dict(object_dict, object_type, object_id)
                     # if object type is region and value is US-CA
                     # find region in dictionary, find index of US-CA in array
                     # index = value adding into array
 
-
-                # matrix[matrix_index].append(sid)
-                # session_ids.append(sid)
-                # matrix_index += 1
         line_count += 1
     print("Processed " + str(line_count) + " lines.")
-    for x in range(3):
-        print "Item " + str(x) + ": " + matrix[x][0] + ", " + matrix[x][1] + ", " + matrix[x][2]
+    x = 0
+    # for i in matrix:
+    #     print "Item " + str(x) + ": " + matrix[x][0] + ", " + matrix[x][1] + ", " + matrix[x][2] 
+    #     x += 1
+    for e in object_dict:
+        print e
+        for x in object_dict[e]:
+            print "\t" + x
     # print(matrix)
     # print(labels)
