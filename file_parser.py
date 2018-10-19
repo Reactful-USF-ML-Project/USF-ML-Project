@@ -1,5 +1,6 @@
 import csv
 import numpy
+from datetime import datetime
 
 def update_dict(dictionary, object_type, object_id):
     if object_type not in dictionary:
@@ -8,8 +9,14 @@ def update_dict(dictionary, object_type, object_id):
     elif object_id not in dictionary[object_type]:
         dictionary[object_type].append(object_id)
 
+def get_session_length(start, end):
+    st = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
+    et = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    return (et - st).seconds
+
 # [ start time, end time, average time on page, country, 
-#   region, type, device, page count, reaction combination, goal combination]
+#   region, type, device, page count, reaction combination, goal combination, session_length]
 
 with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.csv.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
@@ -50,10 +57,20 @@ with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.
                     matrix[matrix_index][array_index] = value
 
             else:
+                if matrix_index > 0:
+                    st = matrix[matrix_index-1][0]
+                    et = matrix[matrix_index-1][1]
+                    session_length = get_session_length(st, et)
+                    matrix[matrix_index-1][10] = session_length
+                    page_count = matrix[matrix_index-1][7]
+                    if session_length > 0 and page_count > 0:
+                        matrix[matrix_index-1][2] = session_length/page_count
+                    else:
+                        matrix[matrix_index-1][2] = 0
                 matrix_index += 1
                 session_ids.append(sid)
 
-                a = numpy.empty(10, dtype=object)
+                a = numpy.empty(11, dtype=object)
                 matrix.append(a)
                 # check if time is smaller than min or greater than max
                 time = row[0]
