@@ -18,7 +18,7 @@ def get_session_length(start, end):
 # [ start time, end time, average time on page, country, 
 #   region, type, device, page count, reaction combination, goal combination, session_length]
 
-with open('../../../Downloads/results-20181008-130002 - results-20181008-130002.csv.csv') as csv_file:
+with open('./results-20181008-130002 - results-20181008-130002.csv.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     line_count = 0
     session_ids = []
