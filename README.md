@@ -147,6 +147,29 @@ if(current_value.isHigherThan(matrix[current_matrix][1])){
 
 ```
 
+#### Meeting 10 / 17
+ignore country as we have region
+count goals maybe since it may not be that important
+bigquery timestamp length
+Ultimately we have an input matrix but the output needs to be a specific reaction type which we will have an ID of (because of reaction completed id). which needs to be mapped out to a string like: "page_exit_lightbox"
+
+We can do a MD5 Hash of the reaction combination string(all reaction ids in order) to get unique ids
+Test with and without the goal combination as it may not be important
+
+For BigQuery reduction: 
+[start time, end time, region, type, device, page_count, reaction combination, goal combination, reaction completed]
+start_time: function that keeps the smallest timestamp seen
+end_time: function that keeps the largest timestamp seen
+page_count: sub query sum() of page transitions
+reaction_combination: concat of all reaction IDs seen in order by time
+goal_combination: concat of all goal IDs seen in order by time
+reaction completed: The id of the reaction that completed which will be needed for the output (won't be trained with)
+
+Post-Process:
+Transform strings to ints with indexes of label lists (Figure out issue with session ordering matters)
+average time per page calculation
+
+
 ### Average time on page
 This uses all three of: start time, end time and page count. So we need to wait for all of the values to come in (because start and end time can change throughout the loops). So we should compute this value when a new user session is found. The formula is: `(end time - start time) / page count`
 
