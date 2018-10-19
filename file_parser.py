@@ -19,10 +19,6 @@ def place_in_current_session(key,value,current_session,possible_values,map_to_se
     update_dict(possible_values, object_key, object_value)
 
     if key == "page":
-        page_count = current_session[map_to_session_index['page_count']]
-        if page_count is None:
-            current_session[map_to_session_index['page_count']] = 0
-
         current_session[map_to_session_index['page_count']] += 1
 
     elif key in map_to_session_index:
@@ -97,13 +93,10 @@ with open('./results-20181008-130002 - results-20181008-130002.csv.csv') as csv_
                 object_value = row[4]
                 update_dict(possible_values, object_key, object_value)
                 current_session = matrix[matrix_index]
-                if object_key == "page":
-                    current_session[map_to_session_index['page_count']] = 1
-                else:
-                    current_session[map_to_session_index['page_count']] = 0
-                    if object_key in map_to_session_index:
-                        value = possible_values[object_key].index(object_value)
-                        current_session[map_to_session_index[object_key]] = value
+                current_session[map_to_session_index['reaction']] = 0 # Default reaction value of zero
+                current_session[map_to_session_index['goal']] = 0 # Default goal value of zero 
+                current_session[map_to_session_index['page_count']] = 0 # Default page_count value of zero 
+                place_in_current_session(object_key,object_value,current_session,possible_values,map_to_session_index)
  
         line_count += 1
     print("Processed " + str(line_count) + " lines.")
