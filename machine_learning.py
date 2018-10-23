@@ -2,8 +2,10 @@ import tensorflow as tf
 import numpy
 import file_parser as matrix_generator
 
-matrix = matrix_generator.get_matrix()
-
+(matrix,possible_values) = matrix_generator.get_matrix()
+# Stuff to look into
+# https://www.tensorflow.org/guide/feature_columns
+# https://stackoverflow.com/questions/46834680/creating-many-feature-columns-in-tensorflow
 new_matrix = []
 for session in matrix:
 	if None not in session:

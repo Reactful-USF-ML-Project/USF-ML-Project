@@ -2,12 +2,12 @@ import csv
 import numpy
 from datetime import datetime
 
-def update_dict(dictionary, object_type, object_id):
-    if object_type not in dictionary:
-        dictionary.update({object_type:[]})
-        dictionary[object_type].append(object_id)
-    elif object_id not in dictionary[object_type]:
-        dictionary[object_type].append(object_id)
+def update_dict(dictionary, object_key, object_value):
+    if object_key not in dictionary:
+        dictionary.update({object_key:[]})
+        dictionary[object_key].append(object_value)
+    elif object_value not in dictionary[object_key]:
+        dictionary[object_key].append(object_value)
 
 def timestamp_to_date(time):
     return datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -19,12 +19,14 @@ def store_to_current_session(key,value,current_session,possible_values,map_to_se
 
     if key == "page":
         current_session[map_to_session_index['page_count']] += 1
-    elif key == "reaction" or key == "goal":
-        current_session[map_to_session_index[key]] += value
+    elif key == "reaction" or key == "goal" or key == "type" or key == "device" or key == "region":
+        update_dict(possible_values, key, value)
+        position_in_possibles = possible_values[key].index(value)
+        current_session[map_to_session_index[key]][position_in_possibles]=1
     elif key in map_to_session_index:
-        hashed_value = hash(value)
-        current_session[map_to_session_index[key]] = hashed_value
-        update_dict(possible_values, key, hashed_value)
+        update_dict(possible_values, key, value)
+        position_in_possibles = possible_values[key].index(value)
+        current_session[map_to_session_index[key]] = position_in_possibles
 
 # Ordering of a session so far (used in map_to_session_index):
 # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
@@ -75,14 +77,14 @@ def get_matrix():
                         last_session = matrix[matrix_index - 1]
 
                         # Update Reaction Sequence to be an integer than a string
-                        hashed_reaction_sequence = hash(last_session[map_to_session_index['reaction']])
-                        last_session[map_to_session_index['reaction']] = hashed_reaction_sequence
-                        update_dict(possible_values, 'reaction', hashed_reaction_sequence)
+                        # hashed_reaction_sequence = hash(last_session[map_to_session_index['reaction']])
+                        # last_session[map_to_session_index['reaction']] = hashed_reaction_sequence
+                        # update_dict(possible_values, 'reaction', hashed_reaction_sequence)
 
                         # Update Goal Sequence to be an integer than a string
-                        hashed_goal_sequence = hash(last_session[map_to_session_index['goal']])
-                        last_session[map_to_session_index['goal']] = hashed_goal_sequence
-                        update_dict(possible_values, 'reaction', hashed_goal_sequence)
+                        # hashed_goal_sequence = hash(last_session[map_to_session_index['goal']])
+                        # last_session[map_to_session_index['goal']] = hashed_goal_sequence
+                        # update_dict(possible_values, 'reaction', hashed_goal_sequence)
 
                         # Need to calculate average time per page
                         session_length = get_session_length(start_time, end_time)
@@ -108,9 +110,14 @@ def get_matrix():
                     current_session = matrix[matrix_index]
 
                     # Set default values
-                    current_session[map_to_session_index['reaction']] = "" # Default reaction value of a string to be appended to
-                    current_session[map_to_session_index['goal']] = "" # Default goal value of a string to be appended to
+                    current_session[map_to_session_index['reaction']] = [0] * 5 # 5 being the number of reactions seen
+                    current_session[map_to_session_index['goal']] = [0] * 9
+                    current_session[map_to_session_index['type']] = [0] * 2
+                    current_session[map_to_session_index['device']] = [0] * 3
+                    current_session[map_to_session_index['region']] = [0] * 112
                     current_session[map_to_session_index['page_count']] = 0 # Default page_count value of zero 
+                    current_session[map_to_session_index['session_length']] = 0
+                    current_session[map_to_session_index['avg_time_per_page']] = 0
 
                     # Need to store whatever is in this row
                     object_key = row[3]
@@ -120,10 +127,17 @@ def get_matrix():
             line_count += 1
             
         print("Processed " + str(line_count) + " lines.")
-        return matrix
+        return (matrix,possible_values)
 
 if __name__ == "__main__": #If running the file on it's own just run the get_matrix() routine and print it
-    matrix = get_matrix()
+    (matrix,possible_values) = get_matrix()
     for a in matrix:
         result = ", ".join(map(str, a))
         print result
+    for possible_value in possible_values:
+        print possible_value+": "+", ".join(map(str, possible_values[possible_value]))
+
+
+
+
+
