@@ -73,8 +73,8 @@ def get_matrix():
                         session_length = get_session_length(start_time, end_time)
                         last_session[map_to_session_index['session_length']] = session_length
                         page_count = last_session[map_to_session_index['page_count']]
-                        last_session[map_to_session_index['reaction']]=hash(last_session[map_to_session_index['reaction']])
-                        last_session[map_to_session_index['goal']]=hash(last_session[map_to_session_index['goal']])
+                        last_session[map_to_session_index['reaction']] = hash(last_session[map_to_session_index['reaction']])
+                        last_session[map_to_session_index['goal']] = hash(last_session[map_to_session_index['goal']])
 
                         if session_length > 0 and page_count > 0:    
                             last_session[map_to_session_index['avg_time_per_page']] = session_length / page_count
