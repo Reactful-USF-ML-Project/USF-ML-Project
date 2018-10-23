@@ -10,13 +10,13 @@ for session in matrix:
 		new_matrix.append(session)
 
 
-m2 = numpy.array(new_matrix, dtype=numpy.int32)
+numpy_array = numpy.array(new_matrix, dtype=numpy.int32)
 
-print(type(m2))
+print(type(numpy_array))
 
-t2 = tf.convert_to_tensor(m2, dtype=tf.float32)
+tensor = tf.convert_to_tensor(numpy_array, dtype=tf.float32)
 
-print(t2)
+print(tensor)
 
 
 
