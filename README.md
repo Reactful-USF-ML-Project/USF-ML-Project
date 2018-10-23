@@ -179,12 +179,44 @@ I'm tired of writing so message me if you get this far and I'll give more instru
 # Tasks left
 
 
-## Based on key in objectId we look through possible values
- ```
- possible_values = { 'country': [], 'region': [], 'type': [], 'device': [], 'page': [], 'reaction': [] }
- ```
+## Google BigQuery
+We need to create pretty much what file_parser does but off of a Google BigQuery SQL statement with a little bit of post proccessing afterwards. A high level description would be that we need to perform: Google BigQuery SQL Selection of data -> Post Proccess data to be what `file_parser` creates -> return matrix, and label dictionary like `file_parser`.
+### Why?
+All of the data we are interested in is stored in a BigQuery database. The way to extract the data that we need we use BigQuery's SQL language to pull it out. So while we are already writing SQL queries to extract the data we should make the SQL do the work of transforming it into a format which is more usable to us. This also helps with performance as it is less to transfer because the transform greatly reduces the size of a result set. Also this offloads data manipulation to a server that was made to perform these sort of queries.
 
-## Important Meanings
+### SQL pt.1
+Need to look into the BigQuery SQL language to be able to group entire sessions (many rows in the BigQuery database) into a single session result that should be representitive of that entire session. It would look like:
+```
+[start_time, end_time, region, type, device, page_count, reaction_combination, goal_combination]
+```
+#### `start_time` & `end_time`
+This will need to be some sort of function to pick the minimum and maximum timestamp throughout all of the values seen, this will need to be researched as to how it works so long as we are able to pick out the smallest timestamp and largest timestamp and be able to plane them into the first and second positions
+
+#### `region, type, device`
+These will just need to be picked out when the corresponding objectType happens to be what these keys are. Since these values only seem to appear once per session we will just use whatever value we find associated to represent the session as a whole. Basically, pick `region`'s value and place into 3rd position and do the same with `type`'s value being placed into the 4th position.
+
+#### `page_count`
+This will be a sum of the number of times which `page` has been seen throughout a session. This is one of the most common operations done by SQL so it should be pretty easy to find documentation on how to do this.
+
+#### `reaction_combination` & `goal_combination`
+This will be where we gather `reaction`s and `goal`s into probably a string seperated by spaces(can be anything comma's would be great too). The `reaction`s and `goal`s are numeric IDs that we need all values of in order to properly represent a session. So we need to research the coalescing of multiple values into a single string value to be in the last two positions
+
+### SQL pt.2
+We need another SQL query to be able to count all of the possible values of the fields which are categorical for tensorflow, i.e. `[region, type, device, reaction_combination, goal_combination]`
+Caveat: I'm pretty sure that `type` and `device` will always be `2` and `3` respectively but there is always the possibility that it can change so we may as well count them anyway.
+So for each of those categorical inputs we need to count the number of unique values that we see for each.
+
+## Post-Processing
+Once we have the results from the SQL we will need to transform this into a matrix usable by Tensorflow.
+
+#### `session_length` & `average_time_per_page`
+These were derived values that we can also derive from the info we have in the result set. 
+```
+session_length = get_session_length(start_time,end_time)
+average_time_per_page = session_length / page_count
+```
+
+## Important Meanings Overall
 
  type: if value: 'new' is new session, if value: 'returning' is returning session
  goal: Completed goal ID
@@ -193,9 +225,11 @@ I'm tired of writing so message me if you get this far and I'll give more instru
  reaction: Reaction ID triggered
 
 # Some Challenges to Figure out
-Under the assumption Tensorflow wants numbers and single dimension arrays.
+~Under the assumption Tensorflow wants numbers and single dimension arrays.~ [Not true see this: tensorflow feature columns](https://www.tensorflow.org/guide/feature_columns)
  * sessions over time of unique user
- * goals over time
+ * ~goals and reactions over time~ [Fixed using the feature columns concept](https://github.com/Reactful-USF-ML-Project/USF-ML-Project/commit/13078037e1f6ddc624623e4ba80ab1e4e45ef878)
  * page transitions over time
 
+# TODO
+ * I have changed how the result matrix looks so I will need to come up with a description of it
 
