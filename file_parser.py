@@ -15,15 +15,15 @@ def get_session_length(start, end):
 
     return (et - st).seconds
 
-def place_in_current_session(key,value,current_session,possible_values,map_to_session_index):
-    update_dict(possible_values, key, value)
+def store_to_current_session(key,value,current_session,possible_values,map_to_session_index):
+    # update_dict(possible_values, key, value)
 
     if key == "page":
         current_session[map_to_session_index['page_count']] += 1
-
+    elif key == "reaction" or key == "goal":
+        current_session[map_to_session_index[key]] += value
     elif key in map_to_session_index:
-        position_in_possibles = possible_values[key].index(value)
-        current_session[map_to_session_index[key]] = position_in_possibles
+        current_session[map_to_session_index[key]] = hash(value)
 
 # Ordering of a session so far (used in map_to_session_index):
 # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
@@ -65,7 +65,7 @@ def get_matrix():
 
                     object_key = row[3]
                     object_value = row[4]
-                    place_in_current_session(object_key,object_value,current_session,possible_values,map_to_session_index)
+                    store_to_current_session(object_key,object_value,current_session,possible_values,map_to_session_index)
 
                 else:
                     if matrix_index > 0:
@@ -73,6 +73,8 @@ def get_matrix():
                         session_length = get_session_length(start_time, end_time)
                         last_session[map_to_session_index['session_length']] = session_length
                         page_count = last_session[map_to_session_index['page_count']]
+                        last_session[map_to_session_index['reaction']]=hash(last_session[map_to_session_index['reaction']])
+                        last_session[map_to_session_index['goal']]=hash(last_session[map_to_session_index['goal']])
 
                         if session_length > 0 and page_count > 0:    
                             last_session[map_to_session_index['avg_time_per_page']] = session_length / page_count
@@ -89,13 +91,13 @@ def get_matrix():
                     end_time = time
 
                     current_session = matrix[matrix_index]
-                    current_session[map_to_session_index['reaction']] = 0 # Default reaction value of zero (temporary solution need something more robust)
-                    current_session[map_to_session_index['goal']] = 0 # Default goal value of zero (temporary solution need something more robust)
+                    current_session[map_to_session_index['reaction']] = "" # Default reaction value of a string to be appended to
+                    current_session[map_to_session_index['goal']] = "" # Default goal value of a string to be appended to
                     current_session[map_to_session_index['page_count']] = 0 # Default page_count value of zero 
 
                     object_key = row[3]
                     object_value = row[4]
-                    place_in_current_session(object_key,object_value,current_session,possible_values,map_to_session_index)
+                    store_to_current_session(object_key,object_value,current_session,possible_values,map_to_session_index)
      
             line_count += 1
         print("Processed " + str(line_count) + " lines.")
