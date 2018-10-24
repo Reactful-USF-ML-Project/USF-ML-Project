@@ -22,7 +22,7 @@ def store_to_current_session(key,value,current_session,possible_values,map_to_se
     elif key == "reaction" or key == "goal" or key == "type" or key == "device" or key == "region":
         update_dict(possible_values, key, value)
         position_in_possibles = possible_values[key].index(value)
-        current_session[map_to_session_index[key]][position_in_possibles]=1
+        current_session[map_to_session_index[key]][position_in_possibles] = 1
     elif key in map_to_session_index:
         update_dict(possible_values, key, value)
         position_in_possibles = possible_values[key].index(value)
@@ -127,10 +127,10 @@ def get_matrix():
             line_count += 1
             
         print("Processed " + str(line_count) + " lines.")
-        return (matrix,possible_values)
+        return (matrix, possible_values)
 
 if __name__ == "__main__": #If running the file on it's own just run the get_matrix() routine and print it
-    (matrix,possible_values) = get_matrix()
+    (matrix, possible_values) = get_matrix()
     for a in matrix:
         result = ", ".join(map(str, a))
         print result
