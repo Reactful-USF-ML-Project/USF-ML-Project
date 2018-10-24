@@ -1,7 +1,7 @@
 # Reactful USF ML Project
 Machine Learning of past Reactful data with Tensorflow in the Google Cloud Platform.
 
-# How it all works
+# File Parser Detailed Technical Details
 
 ## Loading file
 We have a CSV file: file with comma seperated values with top header being the labels for the headers and the values all at the same index of it's associated header.
@@ -153,10 +153,11 @@ count goals maybe since it may not be that important
 bigquery timestamp length
 Ultimately we have an input matrix but the output needs to be a specific reaction type which we will have an ID of (because of reaction completed id). which needs to be mapped out to a string like: "page_exit_lightbox"
 
-We can do a MD5 Hash of the reaction combination string(all reaction ids in order) to get unique ids
+We can do a Hash of the reaction combination string(all reaction ids in order) to get unique ids
 Test with and without the goal combination as it may not be important
 
-For BigQuery reduction: 
+#### For BigQuery reduction: 
+
 [start time, end time, region, type, device, page_count, reaction combination, goal combination, reaction completed]
 start_time: function that keeps the smallest timestamp seen
 end_time: function that keeps the largest timestamp seen
@@ -165,18 +166,29 @@ reaction_combination: concat of all reaction IDs seen in order by time
 goal_combination: concat of all goal IDs seen in order by time
 reaction completed: The id of the reaction that completed which will be needed for the output (won't be trained with)
 
-Post-Process:
+#### Post-Process:
+
 Transform strings to ints with indexes of label lists (Figure out issue with session ordering matters)
 average time per page calculation
 
 
 ### Average time on page
-This uses all three of: start time, end time and page count. So we need to wait for all of the values to come in (because start and end time can change throughout the loops). So we should compute this value when a new user session is found. The formula is: `(end time - start time) / page count`
-
-### TBD 
-I'm tired of writing so message me if you get this far and I'll give more instructions.
+This uses all three of: start time, end time and page count. So we need to wait for all of the values to come in (because start and end time can change throughout the loops). So we should compute this value when a new user session is found. The formula is: `(end_time - start_time) / page_count`
 
 # Tasks left
+
+## Machine Learning
+
+We need to begin working on the machine learning portion of the project which has a lot of stuff going on but hopefully I can explain our strategy well enough. So we will begin by just figuring out the minimum to get this dataset to be able to train (this may involve some changes to the `file_parser` but we need not worry about it too much as it will eventually be phased out with the BigQuery version that will create the same thing directly off of the cloud). Once we have that minimum we will need to evaluate if any of our data is hindering our process (such as goals which we will probably remove). Then we need to optimize our learning algorithm for the types of data that we have, we have quite a few variables to keep in check so we should look up based on the type of data to see what is the best method for each.
+
+#### To put it more simply:
+
+1. Figure out minimum code to get to train
+2. Re-evaluate data to remove unneccesary data (such as goals)
+3. Optimize training algorithms for our specific data
+4. Repeat
+
+
 
 
 ## Google BigQuery
@@ -226,10 +238,11 @@ average_time_per_page = session_length / page_count
 
 # Some Challenges to Figure out
 ~Under the assumption Tensorflow wants numbers and single dimension arrays.~ [Not true see this: tensorflow feature columns](https://www.tensorflow.org/guide/feature_columns)
+
  * sessions over time of unique user
  * ~goals and reactions over time~ [Fixed using the feature columns concept](https://github.com/Reactful-USF-ML-Project/USF-ML-Project/commit/13078037e1f6ddc624623e4ba80ab1e4e45ef878)
- * page transitions over time
+ * page transitions over time (Maybe a frequency occurrence of all pages seen?)
 
 # TODO
- * I have changed how the result matrix looks so I will need to come up with a description of it
+ * I have changed how the result matrix looks so I will need to come up with a description of it but it may change as we train so leave it for now
 
