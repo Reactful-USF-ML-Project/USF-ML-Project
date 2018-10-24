@@ -22,6 +22,7 @@ def store_to_current_session(key,value,current_session,possible_values,map_to_se
     elif key == "reaction" or key == "goal" or key == "type" or key == "device" or key == "region":
         update_dict(possible_values, key, value)
         position_in_possibles = possible_values[key].index(value)
+        # print('position_in_possibles: %d' % position_in_possibles)
         current_session[map_to_session_index[key]][position_in_possibles] = 1
     elif key in map_to_session_index:
         update_dict(possible_values, key, value)
@@ -31,7 +32,7 @@ def store_to_current_session(key,value,current_session,possible_values,map_to_se
 # Ordering of a session so far (used in map_to_session_index):
 # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
 def get_matrix():
-    with open('./results-20181008-130002 - results-20181008-130002.csv.csv') as csv_file:
+    with open('informatica_completed_reactions.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         session_ids = []
@@ -57,20 +58,20 @@ def get_matrix():
                 for l in row: 
                     labels.append(l)
             else:
-                sid = row[2]
+                sid = row[0]
 
                 if sid in session_ids: # We have seen this one before
                     current_session = matrix[matrix_index]
 
                     # Check to see if the time happens to be larger or smaller than the prior
-                    time = timestamp_to_date(row[0])
+                    time = timestamp_to_date(row[1])
                     if time < start_time:
                         start_time = time
                     elif time > end_time:
                         end_time = time
 
-                    object_key = row[3]
-                    object_value = row[4]
+                    object_key = row[4]
+                    object_value = row[5]
                     if object_key == "reaction":
                         if matrix_index >= len(completed_reactions):
                             completed_reactions.append(object_value)
@@ -109,25 +110,25 @@ def get_matrix():
                     matrix.append(new_session)
 
                     # Check if time is smaller than min or greater than max
-                    time = timestamp_to_date(row[0])
+                    time = timestamp_to_date(row[1])
                     start_time = time
                     end_time = time
 
                     current_session = matrix[matrix_index]
 
                     # Set default values
-                    current_session[map_to_session_index['reaction']] = [0] * 5 # 5 being the number of reactions seen
+                    current_session[map_to_session_index['reaction']] = [0] * 10 # 10 being the number of reactions seen
                     current_session[map_to_session_index['goal']] = [0] * 9
                     current_session[map_to_session_index['type']] = [0] * 2
-                    current_session[map_to_session_index['device']] = [0] * 3
-                    current_session[map_to_session_index['region']] = [0] * 112
+                    current_session[map_to_session_index['device']] = [0] * 1
+                    current_session[map_to_session_index['region']] = [0] * 229
                     current_session[map_to_session_index['page_count']] = 0 # Default page_count value of zero 
                     current_session[map_to_session_index['session_length']] = 0
                     current_session[map_to_session_index['avg_time_per_page']] = 0
 
                     # Need to store whatever is in this row
-                    object_key = row[3]
-                    object_value = row[4]
+                    object_key = row[4]
+                    object_value = row[5]
                     if object_key == "reaction":
                         if matrix_index >= len(completed_reactions):
                             completed_reactions.append(object_value)
