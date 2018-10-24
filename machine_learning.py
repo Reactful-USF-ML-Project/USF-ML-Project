@@ -11,14 +11,16 @@ for session in matrix:
 	if None not in session:
 		new_matrix.append(session)
 
+print(type(new_matrix))
 
-numpy_array = numpy.array(new_matrix, dtype=numpy.int32)
+print(numpy.array(new_matrix).shape)
+# numpy_array = numpy.array(new_matrix, dtype=numpy.int32)
 
-print(type(numpy_array))
+# print(type(numpy_array))
 
-tensor = tf.convert_to_tensor(numpy_array, dtype=tf.float32)
+# tensor = tf.convert_to_tensor(numpy_array, dtype=tf.float32)
 
-print(tensor)
+# print(tensor)
 
 
 
