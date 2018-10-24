@@ -11,6 +11,20 @@ for session in matrix:
 	if None not in session:
 		new_matrix.append(session)
 
+
+# Creating feature columns for each categorical type
+
+region = tf.feature_column.categorical_column_with_vocabulary_list("region", possible_values["region"])
+customer_type = tf.feature_column.categorical_column_with_vocabulary_list("type", possible_values["type"])
+device = tf.feature_column.categorical_column_with_vocabulary_list("device", possible_values["device"])
+reaction = tf.feature_column.categorical_column_with_vocabulary_list("reaction", possible_values["reaction"])
+goal = tf.feature_column.categorical_column_with_vocabulary_list("goal", possible_values["goal"])
+
+base_columns = [region, customer_type, device, reaction, goal]
+m = tf.estimator.LinearClassifier(
+    model_dir="./model", feature_columns=base_columns)
+print(m)
+print(type(m))
 print(type(new_matrix))
 
 print(numpy.array(new_matrix).shape)
