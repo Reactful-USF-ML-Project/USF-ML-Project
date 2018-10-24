@@ -16,21 +16,22 @@ def input_evaluation_set(batch_size):
         'session_length': 7
     }
 	features = {
-        'region': numpy.ndarray(shape=(matrix_length,229), dtype=int),
-        'type':  numpy.ndarray(shape=(matrix_length,2), dtype=int),
-        'device': numpy.ndarray(shape=(matrix_length,1), dtype=int),
-        'reaction':  numpy.ndarray(shape=(matrix_length,10), dtype=int),
-        'goal':  numpy.ndarray(shape=(matrix_length,9), dtype=int)
+        'region': numpy.ndarray(shape=matrix_length, dtype=str),
+        'type':  numpy.ndarray(shape=matrix_length, dtype=str),
+        'device': numpy.ndarray(shape=matrix_length, dtype=str),
+        'reaction':  numpy.ndarray( dtype=str, shape=(matrix_length, 5)),
+        'goal':  numpy.ndarray(shape=(matrix_length, 9), dtype=str)
     }
-
+    # https://stackoverflow.com/questions/48697799/tensorflow-feature-column-for-variable-list-of-values
 	matrix_index = 0
 	for session in matrix:
 		for key in features.keys():
-			features[key][matrix_index] = numpy.array(session[map_to_session_index[key]])
+			features[key][matrix_index] = session[map_to_session_index[key]][0]
 		matrix_index += 1
+	# print(features)
 
-	for key in features.keys():
-		features[key]=tf.convert_to_tensor(features[key], dtype=tf.int32)
+	# for key in features.keys():
+		# features[key]=tf.convert_to_tensor(features[key], dtype=tf.string)
 
 	dataset = tf.data.Dataset.from_tensor_slices((dict(features), labels))
 

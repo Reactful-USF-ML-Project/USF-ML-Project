@@ -19,15 +19,16 @@ def store_to_current_session(key,value,current_session,possible_values,map_to_se
 
     if key == "page":
         current_session[map_to_session_index['page_count']] += 1
-    elif key == "reaction" or key == "goal" or key == "type" or key == "device" or key == "region":
-        update_dict(possible_values, key, value)
-        position_in_possibles = possible_values[key].index(value)
-        # print('position_in_possibles: %d' % position_in_possibles)
-        current_session[map_to_session_index[key]][position_in_possibles] = 1
+    # elif key == "reaction" or key == "goal":
+    #     update_dict(possible_values, key, value)
+    #     position_in_possibles = possible_values[key].index(value)
+    #     # print('position_in_possibles: %d' % position_in_possibles)
+    #     current_session[map_to_session_index[key]].append(value)
     elif key in map_to_session_index:
         update_dict(possible_values, key, value)
-        position_in_possibles = possible_values[key].index(value)
-        current_session[map_to_session_index[key]] = position_in_possibles
+        # position_in_possibles = possible_values[key].index(value)
+        if value not in current_session[map_to_session_index[key]]:
+            current_session[map_to_session_index[key]].append(value)
 
 # Ordering of a session so far (used in map_to_session_index):
 # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
@@ -117,11 +118,11 @@ def get_matrix():
                     current_session = matrix[matrix_index]
 
                     # Set default values
-                    current_session[map_to_session_index['reaction']] = [0] * 10 # 10 being the number of reactions seen
-                    current_session[map_to_session_index['goal']] = [0] * 9
-                    current_session[map_to_session_index['type']] = [0] * 2
-                    current_session[map_to_session_index['device']] = [0] * 1
-                    current_session[map_to_session_index['region']] = [0] * 229
+                    current_session[map_to_session_index['reaction']] = [] # 10 being the number of reactions seen
+                    current_session[map_to_session_index['goal']] = []
+                    current_session[map_to_session_index['type']] = []
+                    current_session[map_to_session_index['device']] = []
+                    current_session[map_to_session_index['region']] = []
                     current_session[map_to_session_index['page_count']] = 0 # Default page_count value of zero 
                     current_session[map_to_session_index['session_length']] = 0
                     current_session[map_to_session_index['avg_time_per_page']] = 0
