@@ -25,12 +25,12 @@ def input_evaluation_set(batch_size):
 
 	matrix_index = 0
 	for session in matrix:
-		features['region'][matrix_index] = numpy.array(session[map_to_session_index['region']])
-		features['type'][matrix_index] = numpy.array(session[map_to_session_index['type']])
-		features['device'][matrix_index] = numpy.array(session[map_to_session_index['device']])
-		features['reaction'][matrix_index] = numpy.array(session[map_to_session_index['reaction']])
-		features['goal'][matrix_index] = numpy.array(session[map_to_session_index['goal']])
+		for key in features.keys():
+			features[key][matrix_index] = numpy.array(session[map_to_session_index[key]])
 		matrix_index += 1
+
+	for key in features.keys():
+		features[key]=tf.convert_to_tensor(features[key], dtype=tf.int32)
 
 	dataset = tf.data.Dataset.from_tensor_slices((dict(features), labels))
 
