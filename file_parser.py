@@ -144,11 +144,11 @@ def get_matrix():
 
 if __name__ == "__main__": #If running the file on it's own just run the get_matrix() routine and print it
     (matrix, possible_values, completed_reactions) = get_matrix()
-    # for a in matrix:
-    #     result = ", ".join(map(str, a))
-    #     print "\n" + result
-    # for possible_value in possible_values:
-    #     print possible_value+": "+", ".join(map(str, possible_values[possible_value]))
+    for a in matrix:
+        result = ", ".join(map(str, a))
+        print "\n" + result
+    for possible_value in possible_values:
+        print possible_value+": "+", ".join(map(str, possible_values[possible_value]))
 
 
     # for rid in completed_reactions:
