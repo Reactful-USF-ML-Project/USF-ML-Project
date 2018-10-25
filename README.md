@@ -245,4 +245,6 @@ average_time_per_page = session_length / page_count
 
 # TODO
  * I have changed how the result matrix looks so I will need to come up with a description of it but it may change as we train so leave it for now
-
+ * BigQuery transfer project data to another project
+ * Object constant update as bigquery events come in (how to handle this sort of thing).
+ * 
