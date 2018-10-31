@@ -16,9 +16,9 @@ def input_evaluation_set(batch_size):
         'session_length': 7
     }
 	features = {
-        'region': numpy.ndarray(shape=matrix_length, dtype=str),
-        'type':  numpy.ndarray(shape=matrix_length, dtype=str),
-        'device': numpy.ndarray(shape=matrix_length, dtype=str),
+        'region': numpy.ndarray(shape=(matrix_length, 1), dtype=str),
+        'type':  numpy.ndarray(shape=(matrix_length, 1), dtype=str),
+        'device': numpy.ndarray(shape=(matrix_length, 1), dtype=str),
         'reaction':  numpy.ndarray( dtype=str, shape=(matrix_length, 5)),
         'goal':  numpy.ndarray(shape=(matrix_length, 9), dtype=str)
     }
@@ -26,14 +26,18 @@ def input_evaluation_set(batch_size):
 	matrix_index = 0
 	for session in matrix:
 		for key in features.keys():
-			features[key][matrix_index] = session[map_to_session_index[key]][0]
+			for index in features[key]:
+		                features[key][matrix_index][index] = session[map_to_session_index[key]][index]
 		matrix_index += 1
-	# print(features)
+	print(features['region'])
 
 	# for key in features.keys():
 		# features[key]=tf.convert_to_tensor(features[key], dtype=tf.string)
-
-	dataset = tf.data.Dataset.from_tensor_slices((dict(features), labels))
+	new_labels=[]
+	for label in labels:
+		new_labels.append(possible_values['reaction'].index(label))
+	# print(new_labels)
+	dataset = tf.data.Dataset.from_tensor_slices((dict(features), new_labels))
 
 	# return features
 	return dataset.batch(batch_size)
@@ -41,7 +45,7 @@ def input_evaluation_set(batch_size):
 # https://www.tensorflow.org/guide/feature_columns
 # https://stackoverflow.com/questions/46834680/creating-many-feature-columns-in-tensorflow
 
-print(input_evaluation_set(0))
+# print(input_evaluation_set(0))
 
 # Creating feature columns for each categorical type
 
