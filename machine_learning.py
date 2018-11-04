@@ -19,15 +19,14 @@ def input_evaluation_set(batch_size):
         'region': numpy.ndarray(shape=(matrix_length, 1), dtype=str),
         'type':  numpy.ndarray(shape=(matrix_length, 1), dtype=str),
         'device': numpy.ndarray(shape=(matrix_length, 1), dtype=str),
-        'reaction':  numpy.ndarray( dtype=str, shape=(matrix_length, 5)),
-        'goal':  numpy.ndarray(shape=(matrix_length, 9), dtype=str)
+        # 'reaction':  numpy.ndarray( dtype=str, shape=(matrix_length, 5)),
+        # 'goal':  numpy.ndarray(shape=(matrix_length, 9), dtype=str)
     }
     # https://stackoverflow.com/questions/48697799/tensorflow-feature-column-for-variable-list-of-values
 	matrix_index = 0
 	for session in matrix:
 		for key in features.keys():
-			for index in features[key]:
-		                features[key][matrix_index][index] = session[map_to_session_index[key]][index]
+  		    features[key][matrix_index] = session[map_to_session_index[key]]
 		matrix_index += 1
 	print(features['region'])
 
@@ -52,10 +51,10 @@ def input_evaluation_set(batch_size):
 region = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("region", possible_values["region"]))
 customer_type = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("type", possible_values["type"]))
 device = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("device", possible_values["device"]))
-reaction = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("reaction", possible_values["reaction"]))
-goal = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("goal", possible_values["goal"]))
+# reaction = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("reaction", possible_values["reaction"]))
+# goal = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("goal", possible_values["goal"]))
 
-base_columns = [region, customer_type, device, reaction, goal]
+base_columns = [region, customer_type, device]
 m = tf.estimator.LinearClassifier(
     model_dir="./model", feature_columns=base_columns)
 
