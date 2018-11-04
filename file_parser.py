@@ -147,16 +147,16 @@ if __name__ == "__main__": #If running the file on it's own just run the get_mat
     (matrix, possible_values, completed_reactions) = get_matrix()
     for a in matrix:
         result = ", ".join(map(str, a))
-        print "\n" + result
+        print("\n" + result)
     for possible_value in possible_values:
-        print possible_value+": "+", ".join(map(str, possible_values[possible_value]))
+        print(possible_value+": "+", ".join(map(str, possible_values[possible_value])))
 
 
     # for rid in completed_reactions:
     #     print str(rid) + "\n"
 
-    print "Matrix len: " + str(len(matrix))
-    print "Reaction list len: " + str(len(completed_reactions))
+    print("Matrix len: " + str(len(matrix)))
+    print("Reaction list len: " + str(len(completed_reactions)))
 
 
 

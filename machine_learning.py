@@ -26,7 +26,8 @@ def input_evaluation_set(batch_size):
 	matrix_index = 0
 	for session in matrix:
 		for key in features.keys():
-  		    features[key][matrix_index] = session[map_to_session_index[key]]
+                    print(session[map_to_session_index[key]])
+                    features[key][matrix_index] = session[map_to_session_index[key]]
 		matrix_index += 1
 	print(features['region'])
 
