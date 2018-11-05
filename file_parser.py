@@ -15,42 +15,51 @@ def timestamp_to_date(time):
 def get_session_length(start, end):
     return int((end - start).total_seconds() * 1000000)
 
-def store_to_current_session(key,value,current_session,possible_values,map_to_session_index):
+def store_to_current_session(key,value,features,possible_values,map_to_feature_name):
 
     if key == "page":
-        current_session[map_to_session_index['page_count']] += 1
+        features[map_to_feature_name['page_count']][-1] += 1
     # elif key == "reaction" or key == "goal":
     #     update_dict(possible_values, key, value)
     #     position_in_possibles = possible_values[key].index(value)
     #     # print('position_in_possibles: %d' % position_in_possibles)
-    #     current_session[map_to_session_index[key]].append(value)
-    elif key in map_to_session_index:
+    #     current_session[map_to_feature_name[key]].append(value)
+    elif key in map_to_feature_name:
         update_dict(possible_values, key, value)
         # position_in_possibles = possible_values[key].index(value)
-        if value not in current_session[map_to_session_index[key]]:
-            current_session[map_to_session_index[key]].append(value)
+        if value not in features[map_to_feature_name[key]][-1]:
+            features[map_to_feature_name[key]][-1].append(value)
 
-# Ordering of a session so far (used in map_to_session_index):
+# Ordering of a session so far (used in map_to_feature_name):
 # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
 def get_matrix():
     with open('informatica_completed_reactions.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         session_ids = []
-        matrix = []
+        features = {
+            'avg_time_per_page':[],
+            'region': [],
+            'type': [],
+            'device':  [],
+            'page_count': [],
+            'reaction': [],
+            'goal': [],
+            'session_length': []
+        }
         matrix_index = -1
         start_time = -1
         end_time = -1
         possible_values = {}
-        map_to_session_index = {
-            'avg_time_per_page': 0,
-            'region': 1,
-            'type': 2,
-            'device':  3,
-            'page_count': 4,
-            'reaction': 5,
-            'goal': 6,
-            'session_length': 7
+        map_to_feature_name = {
+            'avg_time_per_page': 'avg_time_per_page',
+            'region': 'region',
+            'type': 'type',
+            'device':  'device',
+            'page_count': 'page_count',
+            'reaction': 'reaction',
+            'goal': 'goal',
+            'session_length': 'session_length'
         }
         completed_reactions = []
         for row in csv_reader:
@@ -62,7 +71,6 @@ def get_matrix():
                 sid = row[0]
 
                 if sid in session_ids: # We have seen this one before
-                    current_session = matrix[matrix_index]
 
                     # Check to see if the time happens to be larger or smaller than the prior
                     time = timestamp_to_date(row[1])
@@ -78,54 +86,48 @@ def get_matrix():
                             completed_reactions.append(object_value)
                         else:
                             completed_reactions[matrix_index] = object_value
-                    store_to_current_session(object_key,object_value,current_session,possible_values,map_to_session_index)
+                    store_to_current_session(object_key,object_value,features,possible_values,map_to_feature_name)
 
                 else: # This is a new session so we need to do a few things
                     if matrix_index > 0:
-                        last_session = matrix[matrix_index - 1]
 
                         # Update Reaction Sequence to be an integer than a string
-                        # hashed_reaction_sequence = hash(last_session[map_to_session_index['reaction']])
-                        # last_session[map_to_session_index['reaction']] = hashed_reaction_sequence
+                        # hashed_reaction_sequence = hash(last_session[map_to_feature_name['reaction']])
+                        # last_session[map_to_feature_name['reaction']] = hashed_reaction_sequence
                         # update_dict(possible_values, 'reaction', hashed_reaction_sequence)
 
                         # Update Goal Sequence to be an integer than a string
-                        # hashed_goal_sequence = hash(last_session[map_to_session_index['goal']])
-                        # last_session[map_to_session_index['goal']] = hashed_goal_sequence
+                        # hashed_goal_sequence = hash(last_session[map_to_feature_name['goal']])
+                        # last_session[map_to_feature_name['goal']] = hashed_goal_sequence
                         # update_dict(possible_values, 'reaction', hashed_goal_sequence)
 
                         # Need to calculate average time per page
                         session_length = get_session_length(start_time, end_time)
-                        last_session[map_to_session_index['session_length']] = session_length
-                        page_count = last_session[map_to_session_index['page_count']]
+                        features[map_to_feature_name['session_length']][-1] = session_length
+                        page_count = features[map_to_feature_name['page_count']][-1]
 
                         if session_length > 0 and page_count > 0:    
-                            last_session[map_to_session_index['avg_time_per_page']] = session_length / page_count
+                            features[map_to_feature_name['avg_time_per_page']][-1] = session_length / page_count
                         else:
-                            last_session[map_to_session_index['avg_time_per_page']] = 0
+                            features[map_to_feature_name['avg_time_per_page']][-1] = 0
 
                     matrix_index += 1
                     session_ids.append(sid)
-
-                    new_session = numpy.empty(len(map_to_session_index), dtype=object)
-                    matrix.append(new_session)
 
                     # Check if time is smaller than min or greater than max
                     time = timestamp_to_date(row[1])
                     start_time = time
                     end_time = time
 
-                    current_session = matrix[matrix_index]
-
                     # Set default values
-                    current_session[map_to_session_index['reaction']] = [] # 10 being the number of reactions seen
-                    current_session[map_to_session_index['goal']] = []
-                    current_session[map_to_session_index['type']] = []
-                    current_session[map_to_session_index['device']] = []
-                    current_session[map_to_session_index['region']] = []
-                    current_session[map_to_session_index['page_count']] = 0 # Default page_count value of zero 
-                    current_session[map_to_session_index['session_length']] = 0
-                    current_session[map_to_session_index['avg_time_per_page']] = 0
+                    features[map_to_feature_name['reaction']].append([]) # 10 being the number of reactions seen
+                    features[map_to_feature_name['goal']].append([])
+                    features[map_to_feature_name['type']].append([])
+                    features[map_to_feature_name['device']].append([])
+                    features[map_to_feature_name['region']].append([])
+                    features[map_to_feature_name['page_count']].append(0) # Default page_count value of zero 
+                    features[map_to_feature_name['session_length']].append(0)
+                    features[map_to_feature_name['avg_time_per_page']].append(0)
 
                     # Need to store whatever is in this row
                     object_key = row[4]
@@ -135,19 +137,18 @@ def get_matrix():
                             completed_reactions.append(object_value)
                         else:
                             completed_reactions[matrix_index] = object_value
-                    store_to_current_session(object_key,object_value,current_session,possible_values,map_to_session_index)
+                    store_to_current_session(object_key,object_value,features,possible_values,map_to_feature_name)
      
             line_count += 1
             
         print("Processed " + str(line_count) + " lines.")
-        return (matrix, possible_values, completed_reactions)
+        return (features, possible_values, completed_reactions)
 
 
 if __name__ == "__main__": #If running the file on it's own just run the get_matrix() routine and print it
-    (matrix, possible_values, completed_reactions) = get_matrix()
-    for a in matrix:
-        result = ", ".join(map(str, a))
-        print("\n" + result)
+    (features, possible_values, completed_reactions) = get_matrix()
+    for feature in features:
+        print(feature+": "+", ".join(map(str, features[feature])))
     for possible_value in possible_values:
         print(possible_value+": "+", ".join(map(str, possible_values[possible_value])))
 
@@ -155,7 +156,7 @@ if __name__ == "__main__": #If running the file on it's own just run the get_mat
     # for rid in completed_reactions:
     #     print str(rid) + "\n"
 
-    print("Matrix len: " + str(len(matrix)))
+    print("Matrix len: " + str(len(features['page_count'])))
     print("Reaction list len: " + str(len(completed_reactions)))
 
 
