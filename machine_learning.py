@@ -25,7 +25,8 @@ def input_evaluation_set(batch_size):
         'type':  features['type'],
         'device': features['device'],
         'reaction': get_max(features['reaction'],'str'),#needed to be filled with empty '' Need to figure out a way around this
-        'goal': get_max(features['goal'], 'str')
+        'goal': get_max(features['goal'], 'str'),
+        'session_length': features['session_length']
     }
     # https://stackoverflow.com/questions/48697799/tensorflow-feature-column-for-variable-list-of-values
 	# matrix_index = 0
@@ -59,6 +60,7 @@ customer_type = tf.feature_column.indicator_column(tf.feature_column.categorical
 device = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("device", possible_values["device"]))
 reaction = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("reaction", possible_values["reaction"]))
 goal = tf.feature_column.indicator_column(tf.feature_column.categorical_column_with_vocabulary_list("goal", possible_values["goal"]))
+# session_length = tf.feature_column.numeric_column(key='session_length',default_value=possible_values['session_length'], dtype=tf.int64)
 
 base_columns = [region, customer_type, device, reaction, goal]
 m = tf.estimator.LinearClassifier(
