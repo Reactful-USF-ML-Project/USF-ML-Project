@@ -62,7 +62,7 @@ Initialized as:
  }
  ```
  ### Use
- Tensorflow likes numbers not string, so we need to make a string into a number. How we will do that is keep track of all the strings we have seen (as one of the values of this dictionary), and if the value we are looking at is in this dictionary we will use the index of the array as the number we need. If it is not in the array we will need to add it to the array and use that index (which happens to be the length of the array)
+ ~Tensorflow likes numbers not string, so we need to make a string into a number.~ (Turns out this axiom was false causing our entire logic that followed from it to be incorrect, to read what we actually did go [here](#new-implementation)) How we will do that is keep track of all the strings we have seen (as one of the values of this dictionary), and if the value we are looking at is in this dictionary we will use the index of the array as the number we need. If it is not in the array we will need to add it to the array and use that index (which happens to be the length of the array)
 
  For Example:
  ```
@@ -175,9 +175,7 @@ average time per page calculation
 ### Average time on page
 This uses all three of: start time, end time and page count. So we need to wait for all of the values to come in (because start and end time can change throughout the loops). So we should compute this value when a new user session is found. The formula is: `(end_time - start_time) / page_count`
 
-# Tasks left
-
-## Machine Learning
+## Steps to Machine Learning
 
 We need to begin working on the machine learning portion of the project which has a lot of stuff going on but hopefully I can explain our strategy well enough. So we will begin by just figuring out the minimum to get this dataset to be able to train (this may involve some changes to the `file_parser` but we need not worry about it too much as it will eventually be phased out with the BigQuery version that will create the same thing directly off of the cloud). Once we have that minimum we will need to evaluate if any of our data is hindering our process (such as goals which we will probably remove). Then we need to optimize our learning algorithm for the types of data that we have, we have quite a few variables to keep in check so we should look up based on the type of data to see what is the best method for each.
 
@@ -187,6 +185,31 @@ We need to begin working on the machine learning portion of the project which ha
 2. Re-evaluate data to remove unneccesary data (such as goals)
 3. Optimize training algorithms for our specific data
 4. Repeat
+
+# New Implementation
+
+So it turns out that a lot of our assumptions about how tensorflow liked it's data inputted turned out to be false. Our new implementation still goes through the CSV parses it into a data structure that is not a matrix but a `HashMap<String,Array<Array<String> || Number>>` so it has keys which are strings and values which are either an array of arrays containing strings or an array of numbers. I.E
+
+```python
+{
+    "region":[["Region of first session"],["Region of second session"]],
+    "session_length":[session_length_of_first_session,session_length_of_second_session],
+    "page_count":[1,2],
+    "avg_time_per_page":[1,2],
+    "goal":[["1st goal ID","2nd goal ID"],["2nd goal ID"]],
+    "device":[["desktop"],["mobile"],["tablet"]],
+    "type":[["returning"],["new"]],
+    "reaction":[["1st shown Reaction ID","2nd ID"],["1st shown to second session ID"]]
+}
+```
+
+With this we also keep record of the last shown reaction ID (because the dataset that this is parsing upon is assumed to be all completed sessions - the last reaction shown to the user is the one which was completed). At the same time we also keep record of all of the possible values that any of the values take in much the same format as above but the values are sets of all the possible values. 
+
+## Actually Training
+
+We have some data which are raw numerical values and some which are strings (even multiple strings). The numerical values are the ones we need to worry the least about since tensor flow works upon numbers easily. The string values need to be converted in such a way that tensorflow can form relationships among them (it has no understanding of the difference between a new and returning user but we don't know the relationship either so we will allow it to do what it is best at and form that relationship on its own). The way that we make tensorflow understand it is through telling tensorflow how to deal with these values using something called categorical column. There are different variations on a categorical column but they all boil down to this, they map categorical data (such as string categories which cannot be easily converted to quantitative data like numbers) into quantitative data like numbers. One of the simplest implementations of this is called the one-hot encoding paradigm which takes an array of strings and converts it into an array of 1s and 0s. We were initally under the presumption that we were to do this conversion ourselves but that ended up being erroneous. 
+
+# Tasks left
 
 
 
@@ -244,7 +267,5 @@ average_time_per_page = session_length / page_count
  * page transitions over time (Maybe a frequency occurrence of all pages seen?)
 
 # TODO
- * I have changed how the result matrix looks so I will need to come up with a description of it but it may change as we train so leave it for now
- * BigQuery transfer project data to another project
  * Object constant update as bigquery events come in (how to handle this sort of thing).
- * 
+ * Explain training further and move on to predicting.
