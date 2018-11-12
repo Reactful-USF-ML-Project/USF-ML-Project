@@ -237,9 +237,44 @@ This will be a sum of the number of times which `page` has been seen throughout 
 This will be where we gather `reaction`s and `goal`s into probably a string seperated by spaces(can be anything comma's would be great too). The `reaction`s and `goal`s are numeric IDs that we need all values of in order to properly represent a session. So we need to research the coalescing of multiple values into a single string value to be in the last two positions
 
 ### SQL pt.2
-We need another SQL query to be able to count all of the possible values of the fields which are categorical for tensorflow, i.e. `[region, type, device, reaction_combination, goal_combination]`
-Caveat: I'm pretty sure that `type` and `device` will always be `2` and `3` respectively but there is always the possibility that it can change so we may as well count them anyway.
-So for each of those categorical inputs we need to count the number of unique values that we see for each.
+So Roger has given us a base SQL query to work with:
+``` SQL
+SELECT
+  ALL_SESSION_FOR_CLIENT.SessionId,
+  ALL_SESSION_FOR_CLIENT.date,
+  ALL_SESSION_FOR_CLIENT.EventName,
+  ALL_SESSION_FOR_CLIENT.SourceType,
+  ALL_SESSION_FOR_CLIENT.ObjectType,
+  ALL_SESSION_FOR_CLIENT.ObjectId
+FROM (
+SELECT
+  date,
+  SessionId,
+  ObjectType,
+  ObjectId,
+  SourceType,
+  EventName
+FROM usf_research.Informatica_Data_ALL_06012018_07312018
+) AS ALL_SESSION_FOR_CLIENT
+
+INNER JOIN (
+SELECT SessionID 
+FROM usf_research.Informatica_Data_ALL_06012018_07312018
+
+WHERE ObjectType = 'reaction' AND EventName like 'completed%'
+
+) AS GOAL_COMPLETED_SESSION
+
+ON 
+ALL_SESSION_FOR_CLIENT.SessionId = GOAL_COMPLETED_SESSION.SessionId
+
+
+GROUP BY ALL_SESSION_FOR_CLIENT.SessionId,  ALL_SESSION_FOR_CLIENT.date, ALL_SESSION_FOR_CLIENT.EventName, ALL_SESSION_FOR_CLIENT.ObjectType, ALL_SESSION_FOR_CLIENT.ObjectId, ALL_SESSION_FOR_CLIENT.SourceType
+   
+
+ORDER BY  ALL_SESSION_FOR_CLIENT.SessionID
+```
+If you notice he is doing `SELECT` `FROM` another `SELECT` meaning that he selected data from data he just selected as though it were another table (this is atypical of a normal SQL and is a feature of BigQuery). We will need to query the table that is generated from this to be able to extrapolate the data I identified above (start_time, end_time, region, type, device, reaction_combination, goal_combination) in the way I described.
 
 ## Post-Processing
 Once we have the results from the SQL we will need to transform this into a matrix usable by Tensorflow.
