@@ -1,3 +1,7 @@
+""" file_parser.py: Takes in a CSV file of raw data and returns data in a format TensorFlow will like. """
+
+__author__      = "Nick Perez", "Kelsea Flores", "John Murray"
+
 import csv
 import numpy
 from datetime import datetime
