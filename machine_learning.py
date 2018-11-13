@@ -120,6 +120,9 @@ classifier.train(
     input_fn=lambda:input_evaluation_set(100),
     steps=100)
 
+# TODO: call evaluate
+# result = classifier.evaluate(test input)
+
 
 # print(classifier)
 # print(type(classifier))
