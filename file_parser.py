@@ -2,6 +2,21 @@ import csv
 import numpy
 from datetime import datetime
 
+""" Updates the dictionary containing the object key and object
+    value key value pair. If the object key is not in the 
+    dictionary, the key is added to the dictionary with an empty
+    array as the value. The object value is then added to the 
+    empty array. Otherwise, the object value is appended to the
+    existing array. 
+
+    Arguments:
+     - dictionary: 
+            dictionary to be updated 
+     - object_key:
+            key to be either searched in or added to dictionary
+     - object_value: 
+            value to be either searched in or added to dictionary
+"""
 def update_dict(dictionary, object_key, object_value):
     if object_key not in dictionary:
         dictionary.update({object_key:[]})
@@ -9,12 +24,38 @@ def update_dict(dictionary, object_key, object_value):
     elif object_value not in dictionary[object_key]:
         dictionary[object_key].append(object_value)
 
+
+""" Takes in a timestamp as a string and converts it to a 
+    datetime according to the given format. 
+
+    Arguments:
+     - time: 
+            timestamp as a string
+
+    Return:
+     - timestamp string as a datetime
+"""
 def timestamp_to_date(time):
     return datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%fZ")
 
+
+""" Gets the length of a session. 
+
+    Arguments:
+     - start: 
+            start time of session
+     - end: 
+            end time of session
+
+    Return: 
+     - length of session
+"""
 def get_session_length(start, end):
     return int((end - start).total_seconds() * 1000000)
 
+
+""" 
+"""
 def store_to_current_session(key,value,features,possible_values,map_to_feature_name):
 
     if key == "page":
