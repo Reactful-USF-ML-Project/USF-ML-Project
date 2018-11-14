@@ -69,7 +69,7 @@ def input_evaluation_set(batch_size, is_evaluation_set):
         'device': features['device'][slice_training],
         # Needed to be filled with empty '' Need to figure out a way around this
         'reaction': get_max(features['reaction'], 'str')[slice_training],
-        'goal': get_max(features['goal'], 'str')[slice_training],
+        # 'goal': get_max(features['goal'], 'str')[slice_training],
         'session_length': features['session_length'][slice_training],
         'avg_time_per_page': features['avg_time_per_page'][slice_training],
         'page_count': features['page_count'][slice_training]
@@ -116,7 +116,7 @@ page_count = tf.feature_column.numeric_column(
 
 # """ Trains a model using all of the features in base_columns. """
 base_columns = [region, customer_type, device, reaction,
-                goal, session_length, avg_time_per_page, page_count]
+                session_length, avg_time_per_page, page_count]
 m = tf.estimator.LinearClassifier(
     model_dir="./model", feature_columns=base_columns)
 
@@ -138,15 +138,6 @@ result = classifier.evaluate(lambda: input_evaluation_set(100, False))
 for key, value in sorted(result.items()):
     print('%s: %0.2f' % (key, value))
 
-# print(classifier)
-# print(type(classifier))
-# # numpy_array = numpy.array(new_matrix, dtype=numpy.int32)
-
-# # print(type(numpy_array))
-
-# # tensor = tf.convert_to_tensor(numpy_array, dtype=tf.float32)
-
-# # print(tensor)
 
 # """
 #     Additional resources:
