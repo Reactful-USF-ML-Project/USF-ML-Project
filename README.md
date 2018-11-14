@@ -304,3 +304,4 @@ average_time_per_page = session_length / page_count
 # TODO
  * Object constant update as bigquery events come in (how to handle this sort of thing).
  * Explain training further and move on to predicting.
+ * Add column for time to react complete 
