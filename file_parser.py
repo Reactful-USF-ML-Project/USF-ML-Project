@@ -1,3 +1,7 @@
+""" file_parser.py: Takes in a CSV file of raw data and returns data in a format TensorFlow will like. """
+
+__author__      = "Nick Perez", "Kelsea Flores", "John Murray"
+
 import csv
 import numpy
 from datetime import datetime
@@ -54,7 +58,24 @@ def get_session_length(start, end):
     return int((end - start).total_seconds() * 1000000)
 
 
-""" 
+""" Updates features matrix we the CSV file is read line by line. 
+    (More on features matrix below).
+
+    Arguments:
+     - key: 
+            Object key (ex. "region")
+     - value:
+            Object value (ex. "US-CA")
+     - features:
+            Matrix that maps keys to an array of values. The values
+            at each index represent the value for a particular session. 
+            (ex. region: ["US-CA", "US-HI"]. The value at index 0 will 
+            represent the value for the first session based on session ID).
+     - possible_values:
+            Dictionary that maps all possible object keys to all 
+            possible object values for that specific key
+     - map_to_feature_name:
+            Dictionary that maps each object key to its feature name
 """
 def store_to_current_session(key,value,features,possible_values,map_to_feature_name):
 
@@ -71,6 +92,21 @@ def store_to_current_session(key,value,features,possible_values,map_to_feature_n
         if value not in features[map_to_feature_name[key]][-1]:
             features[map_to_feature_name[key]][-1].append(value)
 
+
+""" Reads a CSV file line by line, updating the necessary data structures 
+    as it goes. 
+
+    Return: 
+     - features:
+            Dictionary that maps each feature name, or object key, to 
+            an array of values taken from the CSV file. Values are ordered
+            by session. 
+     - possible_values:
+            Dictionary that maps all possible object keys to all possible
+            object values.
+     - completed_reactions:
+            List of completed reactions
+"""
 # Ordering of a session so far (used in map_to_feature_name):
 # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
 def get_matrix():
