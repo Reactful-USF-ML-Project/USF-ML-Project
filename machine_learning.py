@@ -49,7 +49,10 @@ def get_max(v, typer):
 # """
 
 
-def input_evaluation_set(batch_size):
+def input_evaluation_set(batch_size, is_evaluation_set):
+    train_set_size = 6
+    slice_training = slice(0 if is_evaluation_set else -1, -
+                           train_set_size, 1 if is_evaluation_set else -1)
     map_to_session_index = {
         'avg_time_per_page': 0,
         'region': 1,
@@ -61,15 +64,15 @@ def input_evaluation_set(batch_size):
         'session_length': 7
     }
     t_features = {
-        'region': features['region'],
-        'type':  features['type'],
-        'device': features['device'],
+        'region': features['region'][slice_training],
+        'type':  features['type'][slice_training],
+        'device': features['device'][slice_training],
         # Needed to be filled with empty '' Need to figure out a way around this
-        'reaction': get_max(features['reaction'], 'str'),
-        'goal': get_max(features['goal'], 'str'),
-        'session_length': features['session_length'],
-        'avg_time_per_page': features['avg_time_per_page'],
-        'page_count': features['page_count']
+        'reaction': get_max(features['reaction'], 'str')[slice_training],
+        'goal': get_max(features['goal'], 'str')[slice_training],
+        'session_length': features['session_length'][slice_training],
+        'avg_time_per_page': features['avg_time_per_page'][slice_training],
+        'page_count': features['page_count'][slice_training]
     }
 
     # """ Iterates through list of completed reactions and appends the index of each
@@ -82,8 +85,8 @@ def input_evaluation_set(batch_size):
 
     # """ Converts the inputs to a dataset. """
     dataset = tf.data.Dataset.from_tensor_slices(
-        (dict(t_features), new_labels))
-    print("Inputted Evaluation Set...")
+        (dict(t_features), new_labels[slice_training]))
+    print("Created " + ("Evaluation" if is_evaluation_set else "Training") + " Set...")
     # return features
     return dataset.batch(batch_size)
 
@@ -126,12 +129,14 @@ classifier = tf.estimator.DNNClassifier(
     n_classes=len(possible_values['reaction']))
 
 classifier.train(
-    input_fn=lambda: input_evaluation_set(100),
+    input_fn=lambda: input_evaluation_set(100, True),
     steps=100)
 
 # TODO: call evaluate
-# result = classifier.evaluate(test input)
+result = classifier.evaluate(lambda: input_evaluation_set(100, False))
 
+for key, value in sorted(result.items()):
+    print('%s: %0.2f' % (key, value))
 
 # print(classifier)
 # print(type(classifier))
