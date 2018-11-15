@@ -256,6 +256,14 @@ This ends up being something like (in BigQuery):
 #### `page_count`
 This will be a sum of the number of times which `page` has been seen throughout a session. This is one of the most common operations done by SQL so it should be pretty easy to find documentation on how to do this.
 
+This ends up being something like (in BigQuery):
+
+```sql
+COUNT(CASE WHEN ObjectType LIKE 'page' THEN 1 ELSE NULL END) as page_count
+```
+
+
+
 #### `reaction_combination` & `goal_combination`
 This will be where we gather `reaction`s and `goal`s into probably a string seperated by spaces(can be anything comma's would be great too). The `reaction`s and `goal`s are numeric IDs that we need all values of in order to properly represent a session. So we need to research the coalescing of multiple values into a single string value to be in the last two positions
 
