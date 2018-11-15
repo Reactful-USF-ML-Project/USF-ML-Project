@@ -227,8 +227,31 @@ Need to look into the BigQuery SQL language to be able to group entire sessions 
 #### `start_time` & `end_time`
 This will need to be some sort of function to pick the minimum and maximum timestamp throughout all of the values seen, this will need to be researched as to how it works so long as we are able to pick out the smallest timestamp and largest timestamp and be able to plane them into the first and second positions
 
+
+
+This ends up being something like (in BigQuery):
+
+```sql
+MIN(UNIX_MILLIS(TIMESTAMP (CAST(date as STRING)))) as start_time,
+MAX(UNIX_MILLIS(TIMESTAMP (CAST(date as STRING)))) as end_time
+```
+
+
+
 #### `region, type, device`
 These will just need to be picked out when the corresponding objectType happens to be what these keys are. Since these values only seem to appear once per session we will just use whatever value we find associated to represent the session as a whole. Basically, pick `region`'s value and place into 3rd position and do the same with `type`'s value being placed into the 4th position.
+
+
+
+This ends up being something like (in BigQuery):
+
+```sql
+(CASE WHEN ObjectType LIKE 'type' THEN ObjectId ELSE NULL END) as type,
+(CASE WHEN ObjectType LIKE 'device' THEN ObjectId ELSE NULL END) as device,
+(CASE WHEN ObjectType LIKE 'region' THEN ObjectId ELSE NULL END) as region
+```
+
+
 
 #### `page_count`
 This will be a sum of the number of times which `page` has been seen throughout a session. This is one of the most common operations done by SQL so it should be pretty easy to find documentation on how to do this.

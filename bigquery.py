@@ -12,7 +12,7 @@ credentials = service_account.Credentials.from_service_account_file(
     '/Users/johnmurray/Downloads/USF-ML-Project-9792f2f97e42.json')
 project_id = 'usf-ml-project'
 
-client = bigquery.Client(credentials = credentials, project = project_id)
+client = bigquery.Client(credentials=credentials, project=project_id)
 
 basequery = ("""
 
@@ -60,7 +60,7 @@ query_job = client.query("""
 --         SourceType,
 --         EventName,
         (CASE WHEN ObjectType LIKE 'type' THEN ObjectId ELSE NULL END) as type,
-        (CASE WHEN ObjectType LIKe 'device' THEN ObjectId ELSE NULL END) as device,
+        (CASE WHEN ObjectType LIKE 'device' THEN ObjectId ELSE NULL END) as device,
         (CASE WHEN ObjectType LIKE 'region' THEN ObjectId ELSE NULL END) as region,
 --         subquery and join on date for the session, select date and get min and max for entire session ID
 --         
@@ -81,21 +81,15 @@ query_job = client.query("""
 
         #LIMIT 1000""", job_config=job_config)
 
-results = query_job.result() # waits for job to complete
+results = query_job.result()  # waits for job to complete
 
 # Ordering of a session so far (used in map_to_feature_name):
 # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
 # def get_matrix():
-    
-        # return (features, possible_values, completed_reactions)
+
+# return (features, possible_values, completed_reactions)
 
 
-if __name__ == "__main__": #If running the file on it's own just run the get_matrix() routine and print it
+if __name__ == "__main__":  # If running the file on it's own just run the get_matrix() routine and print it
     # Start from here
     print(results.to_dataframe())
-
-
-
-
-
-
