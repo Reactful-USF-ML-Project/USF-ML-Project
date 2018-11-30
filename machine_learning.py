@@ -50,7 +50,7 @@ def get_max(v, typer):
 
 
 def input_evaluation_set(batch_size, is_evaluation_set):
-    train_set_size = 6
+    train_set_size = 9
     slice_training = slice(0 if is_evaluation_set else -1, -
                            train_set_size, 1 if is_evaluation_set else -1)
     map_to_session_index = {
@@ -127,12 +127,11 @@ classifier = tf.estimator.DNNClassifier(
     hidden_units=[10, 10],
     # The model must choose between possible Reaction IDs.
     n_classes=len(possible_values['reaction']))
-
+# Throw this in a while loop and change the parameters to the steps and amount of training points for realtime graph
 classifier.train(
-    input_fn=lambda: input_evaluation_set(100, True),
-    steps=100)
+    input_fn=lambda: input_evaluation_set(20, True),
+    steps=150)
 
-# TODO: call evaluate
 result = classifier.evaluate(lambda: input_evaluation_set(100, False))
 
 for key, value in sorted(result.items()):
