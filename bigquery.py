@@ -1,3 +1,5 @@
+from google.oauth2 import service_account
+from google.cloud import bigquery
 import csv
 import numpy
 import os
@@ -18,27 +20,29 @@ from datetime import datetime
      - object_value: 
             value to be either searched in or added to dictionary
 """
+
+
 def update_dict(dictionary, object_key, object_value):
     if object_key not in dictionary:
-        dictionary.update({object_key:[]})
+        dictionary.update({object_key: []})
         dictionary[object_key].append(object_value)
     elif object_value not in dictionary[object_key]:
         dictionary[object_key].append(object_value)
 
+
 # my editions
 # https://www.blendo.co/blog/access-data-google-bigquery-python-r/
-from google.cloud import bigquery
-from google.oauth2 import service_account
+
 
 def get_matrix():
-  # credentials = service_account.Credentials.from_service_account_file('path/to/file.json')
-  credentials = service_account.Credentials.from_service_account_file(
-      os.environ['USF_ML_PROJECT'])
-  project_id = 'usf-ml-project'
+    # credentials = service_account.Credentials.from_service_account_file('path/to/file.json')
+    credentials = service_account.Credentials.from_service_account_file(
+        os.environ['USF_ML_PROJECT'])
+    project_id = 'usf-ml-project'
 
-  client = bigquery.Client(credentials=credentials, project=project_id)
+    client = bigquery.Client(credentials=credentials, project=project_id)
 
-  query = ("""
+    query = ("""
   SELECT 
     ANY_VALUE(type) as type,
     ANY_VALUE(device) as device,
@@ -85,65 +89,63 @@ def get_matrix():
       ORDER BY SessionId
           """)
 
-  query_job = client.query(query)
+    query_job = client.query(query)
 
-  results = query_job.result()  # waits for job to complete
+    results = query_job.result()  # waits for job to complete
 
-  # Ordering of a session so far (used in map_to_feature_name):
-  # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
-  # def get_matrix():
+    # Ordering of a session so far (used in map_to_feature_name):
+    # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
+    # def get_matrix():
 
-  # return (features, possible_values, completed_reactions)
+    # return (features, possible_values, completed_reactions)
 
-  features = {
-              'avg_time_per_page':[], 
-              'region': [], #
-              'type': [], #
-              'device':  [], #
-              'page_count': [], #
-              'reaction': [],
-              'goal': [],
-              'session_length': [],
-          }
-  labels = []
-  possible_values = {
-    'avg_time_per_page':[], 
-    'region': [], #
-    'type': [], #
-    'device':  [], #
-    'page_count': [], #
-    'reaction': [],
-    'goal': [],
-    'session_length': [],
-  }
+    features = {
+        'avg_time_per_page': [],
+        'region': [],
+        'type': [],
+        'device':  [],
+        'page_count': [],
+        'reaction': [],
+        'goal': [],
+        'session_length': [],
+    }
+    labels = []
+    possible_values = {
+        'avg_time_per_page': [],
+        'region': [],
+        'type': [],
+        'device':  [],
+        'page_count': [],
+        'reaction': [],
+        'goal': [],
+        'session_length': [],
+    }
 
-  for result in results:
-      features['region'].append(result['region'])
-      update_dict(possible_values,'region',result['region'])
-      features['type'].append(result['type'])
-      update_dict(possible_values,'type',result['type'])
-      features['device'].append(result['device'])
-      update_dict(possible_values,'device',result['device'])
-      features['page_count'].append(result['page_count'])
-      update_dict(possible_values,'page_count',result['page_count'])
+    for result in results:
+        features['region'].append(result['region'])
+        update_dict(possible_values, 'region', result['region'])
+        features['type'].append(result['type'])
+        update_dict(possible_values, 'type', result['type'])
+        features['device'].append(result['device'])
+        update_dict(possible_values, 'device', result['device'])
+        features['page_count'].append(result['page_count'])
+        update_dict(possible_values, 'page_count', result['page_count'])
 
-      # split up reaction that we aggregated on ','
-      reactions = result['reaction'].split(',')
-      features['reaction'].append(reactions)
-      for reaction in reactions:
-        update_dict(possible_values,'reaction',reaction)
+        # split up reaction that we aggregated on ','
+        reactions = result['reaction'].split(',')
+        features['reaction'].append(reactions)
+        for reaction in reactions:
+            update_dict(possible_values, 'reaction', reaction)
 
+        label = reactions[-1]
+        labels.append(label)
+        session_length = result['end_time'] - result['start_time']
+        avg_time_per_page = (session_length)/result["page_count"]
+        features['session_length'].append(session_length)
+        features['avg_time_per_page'].append(avg_time_per_page)
 
-      label = reactions[-1]
-      labels.append(label)
-      session_length = result['end_time'] - result['start_time']
-      avg_time_per_page = (session_length)/result["page_count"]
-      features['session_length'].append(session_length)
-      features['avg_time_per_page'].append(avg_time_per_page)
-
-
-      print("Pulled all data down from BigQuery...")
-  return (features, possible_values, labels)
-  # if __name__ == "__main__":  # If running the file on it's own just run the get_matrix() routine and print it
-  #     # Start from here
-      # print(results.to_dataframe())
+    print("Pulled all data down from BigQuery...")
+    return (features, possible_values, labels)
+    # if __name__ == "__main__":  # If running the file on it's own just run the get_matrix() routine and print it
+    #     # Start from here
+    # print(results.to_dataframe())

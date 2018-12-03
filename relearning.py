@@ -1,5 +1,5 @@
 import itertools
-import file_parser as matrix_generator
+import bigquery as matrix_generator
 import numpy
 import tensorflow as tf
 # """ maching_learning.py: Gets TensorFlow-friendly data and completes iteration of training in TensorFlow. """
@@ -102,8 +102,8 @@ device = tf.feature_column.indicator_column(
     tf.feature_column.categorical_column_with_vocabulary_list("device", possible_values["device"]))
 reaction = tf.feature_column.indicator_column(
     tf.feature_column.categorical_column_with_vocabulary_list("reaction", possible_values["reaction"]))
-goal = tf.feature_column.indicator_column(
-    tf.feature_column.categorical_column_with_vocabulary_list("goal", possible_values["goal"]))
+# goal = tf.feature_column.indicator_column(
+# tf.feature_column.categorical_column_with_vocabulary_list("goal", possible_values["goal"]))
 session_length = tf.feature_column.numeric_column(
     "session_length")
 avg_time_per_page = tf.feature_column.numeric_column(
