@@ -1,5 +1,6 @@
 import csv
 import numpy
+import os
 from datetime import datetime
 
 # my editions
@@ -9,77 +10,59 @@ from google.oauth2 import service_account
 
 # credentials = service_account.Credentials.from_service_account_file('path/to/file.json')
 credentials = service_account.Credentials.from_service_account_file(
-    '/Users/johnmurray/Downloads/USF-ML-Project-9792f2f97e42.json')
+    os.environ['USF_ML_PROJECT'])
 project_id = 'usf-ml-project'
 
 client = bigquery.Client(credentials=credentials, project=project_id)
 
-basequery = ("""
+query = ("""
+SELECT 
+  ANY_VALUE(type) as type,
+  ANY_VALUE(device) as device,
+  ANY_VALUE(region) as region,
+  STRING_AGG(reaction) as reaction,
+  SUM(page_count) as page_count,
+  MIN(UNIX_MILLIS(TIMESTAMP (CAST(date as STRING)))) as start_time,
+  MAX(UNIX_MILLIS(TIMESTAMP (CAST(date as STRING)))) as end_time
+FROM(
+  
+  SELECT
+    date,
+    ALL_SESSION_FOR_CLIENT.SessionId as SessionId,
+    (CASE WHEN ObjectType LIKE 'type' THEN ObjectId ELSE NULL END) as type,
+    (CASE WHEN ObjectType LIKE 'device' THEN ObjectId ELSE NULL END) as device,
+    (CASE WHEN ObjectType LIKE 'region' THEN ObjectId ELSE NULL END) as region,
+    (CASE WHEN ObjectType LIKE 'reaction' THEN ObjectId ELSE NULL END) as reaction,
+--         subquery and join on date for the session, select date and get min and max for entire session ID        
+    COUNT(CASE WHEN ObjectType LIKE 'page' THEN 1 ELSE NULL END) as page_count
 
-    SELECT
-        ALL_SESSION_FOR_CLIENT.SessionId,
-        ALL_SESSION_FOR_CLIENT.date,
-        ALL_SESSION_FOR_CLIENT.EventName,
-        ALL_SESSION_FOR_CLIENT.SourceType,
-        ALL_SESSION_FOR_CLIENT.ObjectType,
-        ALL_SESSION_FOR_CLIENT.ObjectId
-        FROM (
-        SELECT
+      FROM (
+      SELECT
         date,
         SessionId,
         ObjectType,
         ObjectId,
         SourceType,
         EventName
-        FROM usf_research.Informatica_Data_ALL_06012018_07312018
-        ) AS ALL_SESSION_FOR_CLIENT
-
-        INNER JOIN (
+      FROM usf_research.Informatica_Data_ALL_06012018_07312018) AS ALL_SESSION_FOR_CLIENT
+  --    Getting all reactions to JOIN upon
+      INNER JOIN (
         SELECT SessionID 
         FROM usf_research.Informatica_Data_ALL_06012018_07312018
 
         WHERE ObjectType = 'reaction' AND EventName like 'completed%'
+      ) AS GOAL_COMPLETED_SESSION
+  --    JOINing on reactions which have a completed reaction in their field by their SessionId
+      ON 
+      ALL_SESSION_FOR_CLIENT.SessionId = GOAL_COMPLETED_SESSION.SessionId
 
-        ) AS GOAL_COMPLETED_SESSION
-
-        ON 
-        ALL_SESSION_FOR_CLIENT.SessionId = GOAL_COMPLETED_SESSION.SessionId
-
-        GROUP BY ALL_SESSION_FOR_CLIENT.SessionId,  ALL_SESSION_FOR_CLIENT.date, ALL_SESSION_FOR_CLIENT.EventName, ALL_SESSION_FOR_CLIENT.ObjectType, ALL_SESSION_FOR_CLIENT.ObjectId, ALL_SESSION_FOR_CLIENT.SourceType
-
-        ORDER BY  ALL_SESSION_FOR_CLIENT.SessionID
+      GROUP BY ALL_SESSION_FOR_CLIENT.SessionId,  ALL_SESSION_FOR_CLIENT.date, ALL_SESSION_FOR_CLIENT.EventName, ALL_SESSION_FOR_CLIENT.ObjectType, ALL_SESSION_FOR_CLIENT.ObjectId, ALL_SESSION_FOR_CLIENT.SourceType
+  )
+    GROUP BY SessionId
+    ORDER BY SessionId
         """)
 
-query_job = client.query("""
-
-    SELECT
---         date,
-        SessionId,
---         ObjectType,
---         ObjectId,
---         SourceType,
---         EventName,
-        (CASE WHEN ObjectType LIKE 'type' THEN ObjectId ELSE NULL END) as type,
-        (CASE WHEN ObjectType LIKE 'device' THEN ObjectId ELSE NULL END) as device,
-        (CASE WHEN ObjectType LIKE 'region' THEN ObjectId ELSE NULL END) as region,
---         subquery and join on date for the session, select date and get min and max for entire session ID
---         
-        MIN(UNIX_MILLIS(TIMESTAMP (CAST(date as STRING)))) as start_time,
-        MAX(UNIX_MILLIS(TIMESTAMP (CAST(date as STRING)))) as end_time
-      
-    FROM usf_research.Informatica_Data_ALL_06012018_07312018
-    WHERE SessionId = '03IbtwFMb4z5Z62DItC3Vl'
-    AND ((CASE WHEN ObjectType LIKE 'type' THEN ObjectId ELSE NULL END) IS NOT NULL
-    OR (CASE WHEN ObjectType LIKE 'device' THEN ObjectId ELSE NULL END) IS NOT NULL
-    OR (CASE WHEN ObjectType LIKE 'region' THEN ObjectId ELSE NULL END) IS NOT NULL)
-    
-    GROUP BY SessionID, date, type, device, region
-
-
-
-
-
-        #LIMIT 1000""", job_config=job_config)
+query_job = client.query(query)
 
 results = query_job.result()  # waits for job to complete
 
