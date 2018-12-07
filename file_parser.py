@@ -110,7 +110,7 @@ def store_to_current_session(key,value,features,possible_values,map_to_feature_n
 # Ordering of a session so far (used in map_to_feature_name):
 # [ average time on page, region, type, device, page count, reaction combination, goal combination, session_length]
 def get_matrix():
-    with open('informatica_completed_reactions.csv') as csv_file:
+    with open('completed_reactions.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         session_ids = []
